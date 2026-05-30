@@ -8,6 +8,13 @@ pipeline {
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                echo "Checking out source code..."
+                checkout scm
+            }
+        }
+
         stage('Verify Workspace') {
             steps {
                 sh 'pwd'
@@ -17,8 +24,9 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
+                echo "Building Docker image..."
                 sh '''
-                docker build -t $IMAGE_NAME:$IMAGE_TAG .
+                    docker build -t $IMAGE_NAME:$IMAGE_TAG .
                 '''
             }
         }
@@ -33,7 +41,7 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                     '''
                 }
             }
@@ -41,8 +49,9 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
+                echo "Pushing Docker image..."
                 sh '''
-                docker push $IMAGE_NAME:$IMAGE_TAG
+                    docker push $IMAGE_NAME:$IMAGE_TAG
                 '''
             }
         }
@@ -57,8 +66,8 @@ pipeline {
             echo "Pipeline failed"
         }
 
-        always {
-            sh 'docker logout || true'
+        cleanup {
+            echo "Cleaning up..."
         }
     }
 }
